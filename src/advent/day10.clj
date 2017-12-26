@@ -66,7 +66,9 @@
     (map #(reduce bit-xor %) seqs)))
 
 (defn to-hex [n]
-  (Integer/toString (int n) 16))
+  (str
+   (if (< n 16) "0" "")
+   (Integer/toString (int n) 16)))
 
 (defn knot-hash [s]
   (let [lengths (str-to-len s)
