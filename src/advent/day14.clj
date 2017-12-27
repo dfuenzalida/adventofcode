@@ -18,4 +18,42 @@
        (filter #{\1})
        count))
 
+;; part 1 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (count-used-squares "flqrgnkx")
+
+(defn render-map [input]
+  (->> (map #(str input "-" %) (range 128))
+       (map day10/knot-hash)
+       (map hex-to-binary)))
+
+;; (map println (render-map "flqrgnkx"))
+
+(def example-map ["110101"
+                  "010101"
+                  "111010"]) ;; 4 islands
+
+(defn map-to-set [xs]
+  (into #{}
+        (for [x (range (count (first xs)))
+              y (range (count xs))
+              :when (= \1 (.charAt (get xs y) x))]
+          [x y])))
+; (map-to-set example-map)
+
+(defn contiguous-pts [point-set cont-set x y]
+  ;; (println cont-set [x y])
+  (if (point-set [x y])
+    (let [cont-set' (conj cont-set [x y])
+          neighbors (for [dx [-1 0 1]
+                          dy [-1 0 1]
+                          :when (and (not= 0 dx dy)
+                                     (zero? (* dx dy))
+                                     (point-set [(+ x dx) (+ y dy)])
+                                     (nil? (cont-set' [(+ x dx) (+ y dy)])))]
+                      (contiguous-pts point-set cont-set' (+ x dx) (+ y dy))
+                      )]
+      (reduce into cont-set' neighbors))
+    #{}))
+
+;; ((map-to-set example-map) [4 2])
+;; (contiguous-pts (map-to-set example-map) #{} 1 1)
