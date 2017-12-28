@@ -28,9 +28,9 @@
 
 ;; (map println (render-map "flqrgnkx"))
 
-(def example-map ["110101"
-                  "010101"
-                  "111010"]) ;; 4 islands
+(def example-map ["111111"
+                  "111111"
+                  "111111"]) ;; 4 islands
 
 (defn map-to-set [xs]
   (into #{}
@@ -40,20 +40,41 @@
           [x y])))
 ; (map-to-set example-map)
 
+(declare contiguous-pts')
+
 (defn contiguous-pts [point-set cont-set x y]
-  ;; (println cont-set [x y])
+  (println [x y])
   (if (point-set [x y])
-    (let [cont-set' (conj cont-set [x y])
+    (let [cont-set' (into cont-set [[x y]])
           neighbors (for [dx [-1 0 1]
                           dy [-1 0 1]
                           :when (and (not= 0 dx dy)
                                      (zero? (* dx dy))
+                                     (>= (+ x dx) 0)
+                                     (>= (+ y dy) 0)
                                      (point-set [(+ x dx) (+ y dy)])
                                      (nil? (cont-set' [(+ x dx) (+ y dy)])))]
-                      (contiguous-pts point-set cont-set' (+ x dx) (+ y dy))
-                      )]
+                      (contiguous-pts' point-set cont-set' (+ x dx) (+ y dy)))]
       (reduce into cont-set' neighbors))
     #{}))
 
+(def contiguous-pts' (memoize contiguous-pts))
+
 ;; ((map-to-set example-map) [4 2])
 ;; (contiguous-pts (map-to-set example-map) #{} 1 1)
+
+(defn count-islands [point-set n x y width height]
+  ;(println [x y])
+  (if (and (>= (inc x) width) (>= (inc y) height))
+    n
+    (let [lands (contiguous-pts' point-set #{} x y)]
+      (recur
+       (reduce disj point-set lands)
+       (if (seq lands) (inc n) n)
+       (mod (inc x) width)
+       (if (>= (inc x) width) (inc y) y)
+       width height))))
+
+;; (def example-map (into [] (render-map "flqrgnkx")))
+;; (def example-map (into [] (render-map "vbqugkhl")))
+;; (def example-count (count-islands (map-to-set example-map) 0 0 0 (count (first example-map)) (count example-map)))
