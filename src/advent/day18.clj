@@ -16,15 +16,17 @@
   (-> (slurp "src/input18.txt")
       (clojure.string/split #"\n")))
 
+(defn long-or-str [s]
+  (try (Long. s) (catch Exception e s)))
+
 (defn parse-line [s]
   (let [[c r v] (into [] (.split s " "))]
-    [c r (when v (try (Long. v) (catch Exception e v)))]))
+    [c (long-or-str r) (when v (long-or-str v))]))
 
 (def example-program
   (mapv parse-line example))
 
 (defn run-program [prog i state freq]
-  ;;(println i "/" (get prog i) "- " state freq)
   (if (or (neg? i) (>= i (count prog) i))
     [freq state]
     (let [[cmd reg val] (get prog i)]
@@ -52,4 +54,47 @@
 
 ;; part 1 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (run-program (mapv parse-line (read-input)) 0 {} 0)
+
+(def input-program
+  (mapv parse-line (read-input)))
+
+(defn next-state [state reg val f]
+  (assoc state reg (f (get state reg 0)
+                      (get state val val))))
+  
+(defn step-program [prog ip state queue] ;; returns [ip state sent queue running?]
+  (if (or (neg? ip) (>= ip (count prog)))
+    [ip state nil queue false]
+    (let [[op reg val] (get prog ip)]
+      (condp = op
+        "set" [(inc ip) (next-state state reg val (comp second vector)) nil queue true]
+        "add" [(inc ip) (next-state state reg val +) nil queue true]
+        "mul" [(inc ip) (next-state state reg val *) nil queue true]
+        "mod" [(inc ip) (next-state state reg val mod) nil queue true]
+        "jgz" (let [regv (get state reg reg)]
+                [(+ ip (if (pos? regv) (get state val val) 1)) state nil queue true])
+
+        "snd" [(inc ip) state (get state reg reg) queue true]
+
+        "rcv" (if (empty? queue)
+                [ip state nil [] false]
+                [(inc ip)
+                 (assoc state reg (first queue))
+                 nil
+                 (into [] (rest queue)) true])))))
+
+(defn run-programs [prog s0 i0 q0 s1 i1 q1 nsends0 nsends1]
+  (let [[i0' st0' sent0 q0' run0] (step-program prog i0 s0 q0)
+        [i1' st1' sent1 q1' run1] (step-program prog i1 s1 q1)]
+    (if (= [false false] [run0 run1])
+      [nsends0 nsends1 [i0' st0' q0'] [i1' st1' q1']]
+      (recur
+       prog
+       st0' i0' (if sent1 (conj q0' sent1) q0')
+       st1' i1' (if sent0 (conj q1' sent0) q1')
+       (if sent0 (inc nsends0) nsends0)
+       (if sent1 (inc nsends1) nsends1)))))
+                   
+;; part 2 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (run-programs input-program {"p" 0 :p 0} 0 [] {"p" 1 :p 1} 0 [] 0 0)
 
