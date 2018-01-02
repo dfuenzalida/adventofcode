@@ -26,8 +26,6 @@
        (map day10/knot-hash)
        (map hex-to-binary)))
 
-;; (map println (render-map "flqrgnkx"))
-
 (def example-map ["10100"
                   "11100"
                   "10101"])
@@ -58,4 +56,6 @@
 
 ;; (count (count-islands example-map)) => 2
 ;; (count (count-islands (into [] (render-map "flqrgnkx")))) => 1242
+
+;; part 2 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (count (count-islands (into [] (render-map "vbqugkhl"))))
