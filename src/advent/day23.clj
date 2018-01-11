@@ -36,7 +36,6 @@
 
 (defn step-prog [prog regs ip]
   (let [[op reg val] (get prog ip)]
-    ;; (println "@" ip [op reg val])
     (condp = op
       "set" [(assoc regs reg (get regs val val)) (inc ip)]
       "sub" [(update-in regs [reg] - (get regs val val)) (inc ip)]
@@ -57,25 +56,19 @@
                (+ mult-count
                   (if (= "mul" (first (get prog ip))) 1 0)))))))
 
-(def orig-regs (into {} (map #(vector (str (char (+ % (int \a)))) 0) (range 9))))
+
+(def orig-regs (zipmap (map str "abcdefghi") (repeat 0)))
 
 ;; (step-prog input orig-regs 0)
 ;; part 1 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (run-program-mul-op input orig-regs)
 
-;; (defn run-program' [prog regs]
-;;   (loop [prog prog regs regs ip 0 n 200]
-;;     (if (or ;; (neg? n)
-;;             (neg? ip)
-;;             (>= ip (count prog)))
-;;       (do
-;;         (println "\n" [n regs ip]))
-;;       (let [[regs' ip'] (step-prog prog regs ip)]
-;;         ;; (print "@" ip regs "\r") ;; (select-keys regs ["b" "g" "h"]))
-;;         (recur prog
-;;                regs'
-;;                ip'
-;;                (dec n))))))
+;; part 2
+;; (let [b 106500]
+;;   (count
+;;    (filter not-empty
+;;            (for [x (range b (inc (+ b 17000)) 17)]
+;;              (for [i (range 2 x)
+;;                    :when (zero? (mod x i))]
+;;                true)))))
 
-;; (defn -main [& args]
-;;   (run-program' input (assoc orig-regs "a" 0)))
