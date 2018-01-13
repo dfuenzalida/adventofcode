@@ -53,8 +53,9 @@
       (iter ex-atom [[0 0]] example-pieces)
       (strength @ex-atom)))
 
+;; (def part-a (atom []))
 ;; (def pieces (map parse-line (read-input)))
-;; (iter part-a [[0 0]] pieces)
+;; @(iter part-a [[0 0]] pieces)
 
 (defn iter2 [xs-atom bridge pieces]
   ;; check if any pieces are usable
@@ -72,4 +73,6 @@
           (println "*" (count bridge) (strength bridge) bridge)
           (reset! xs-atom bridge))))))
 
+;; (def pieces (map parse-line (read-input)))
+;; (def part-a (atom []))
 ;; (iter2 part-a [[0 0]] pieces)

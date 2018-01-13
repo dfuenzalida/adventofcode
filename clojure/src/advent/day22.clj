@@ -95,4 +95,5 @@
 ;; (iter2 {[5 3] \#, [3 4] \#} 4 4 :up 100 0) => 26
 
 ;; part 2
-;; (iter2 (zipmap (load-map) (repeat \#)) 12 12 :up 10000000 0)
+;; (defn part2 [] (iter2 (zipmap (load-map) (repeat \#)) 12 12 :up 10000000 0))
+;; (time (part2)) :: "Elapsed time: 18932.110853 msecs"
