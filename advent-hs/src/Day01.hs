@@ -1,5 +1,6 @@
 module Day01 where
 
+part1 :: [Char] -> Integer
 part1 s = foldl (+) 0 matchingInts where
   matching z xs ys = zipWith (\a b -> if (a == b) then [a] else z) xs ys
   digitToInt s = (read s) :: Integer
@@ -15,6 +16,7 @@ part1 s = foldl (+) 0 matchingInts where
 -- *Main Day01> part1 "91212129"
 -- 9
 
+part2 :: [Char] -> Integer
 part2 s = foldl (+) 0 matchingInts where
   matching z xs ys = zipWith (\a b -> if (a == b) then [a] else z) xs ys
   digitToInt s = (read s) :: Integer
