@@ -1,9 +1,9 @@
 module Day03 where
 
-import qualified Data.Map as Map
+import Data.Map (fromList, (!), findWithDefault, insert )
 
-shifts = Map.fromList([("left", (-1,0)), ("right",(1,  0)),
-                       ("up",   ( 0,1)), ("down", (0, -1))])
+shifts = fromList([("left", (-1,0)), ("right",(1,  0)),
+                    ("up",  ( 0,1)), ("down", (0, -1))])
 
 moves :: Int -> [[Char]]
 moves n = firstPart ++ secondPart where
@@ -18,7 +18,7 @@ distance :: Int -> Int
 distance n = firsts + seconds where
   firsts = abs $ foldl1 (+) $ map fst steps
   seconds = abs $ foldl1 (+) $ map snd steps
-  steps = map (shifts Map.!) $ path n
+  steps = map (shifts !) $ path n
 
 -- *Main Day03 Data.Map> distance 12
 -- 3
@@ -33,7 +33,7 @@ allMoves = concatMap moves [1..]
 sumPairs (a,b) (c,d) = (a+c, b+d)
 
 computeGrid grid (x,y) = foldl1 (+) neighborVals where
-  neighborVals = map (\p -> Map.findWithDefault 0 p grid) $ neighbors (x,y)
+  neighborVals = map (\p -> findWithDefault 0 p grid) $ neighbors (x,y)
   neighbors (x,y) = zipWith sumPairs allDeltas (repeat (x,y))
   allDeltas = filter (\x -> x /= (0,0)) $ allPairs [-1, 0, 1] [-1, 0, 1]
   allPairs xs ys = concatMap (\x->(map (\y->(x, y))) ys) xs
@@ -41,14 +41,12 @@ computeGrid grid (x,y) = foldl1 (+) neighborVals where
 fillGrid grid (x,y) movesList limit =
   if curr > limit then curr else fillGrid newGrid newCoord newMoves limit where
     curr = computeGrid grid (x,y)
-    newGrid = Map.insert (x,y) curr grid
-    newCoord = sumPairs (x,y) $ shifts Map.! (head movesList)
+    newGrid = insert (x,y) curr grid
+    newCoord = sumPairs (x,y) $ shifts ! (head movesList)
     newMoves = tail movesList
 
-
--- *Main Day03> import Data.Map (fromList)
--- *Main Day03 Data.Map> fillGrid (fromList [((0,0), 1)]) (1,0) (drop 1 allMoves) 80
+-- fillGrid (fromList [((0,0), 1)]) (1,0) (drop 1 allMoves) 80
 -- 122
--- *Main Day03 Data.Map> fillGrid (fromList [((0,0), 1)]) (1,0) (drop 1 allMoves) 999999
+-- fillGrid (fromList [((0,0), 1)]) (1,0) (drop 1 allMoves) 999999
 -- 1009457
 

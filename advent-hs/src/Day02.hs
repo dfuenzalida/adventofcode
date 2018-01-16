@@ -10,7 +10,7 @@ part1 xss = foldl1 (+) diffs where
   maxs = map (foldl1 max) xss
   mins = map (foldl1 min) xss
 
--- *Main Day02> checksum spreadsheet1
+-- part1 spreadsheet1
 -- 18
 
 spreadsheet2 = [[5,9,2,8],
@@ -25,5 +25,5 @@ part2 xss = foldl1 (+) $ map checkRow xss where
   validPair (a,b) = (a /= b) && (0 == (rem (max a b) (min a b)))
   allPairs xs ys = concatMap (\x->(map (\y->((max x y), (min x y)))) ys) xs
 
--- *Main Day02> Day02.part2 spreadsheet2
+-- part2 spreadsheet2
 -- 9
