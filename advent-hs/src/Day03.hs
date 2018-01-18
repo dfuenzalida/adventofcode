@@ -39,7 +39,8 @@ computeGrid grid (x,y) = foldl1 (+) neighborVals where
   allPairs xs ys = concatMap (\x->(map (\y->(x, y))) ys) xs
 
 fillGrid grid (x,y) movesList limit =
-  if curr > limit then curr else fillGrid newGrid newCoord newMoves limit where
+  if curr > limit then curr
+  else fillGrid newGrid newCoord newMoves limit where
     curr = computeGrid grid (x,y)
     newGrid = insert (x,y) curr grid
     newCoord = sumPairs (x,y) $ shifts ! (head movesList)
