@@ -17,12 +17,26 @@ part1loop pos offsets steps =
 -- part1loop 0 [0,3,0,1,-3] 0
 -- 5
 
-part1 filename = result where
+countLoops filename loopfn = result where
   readInteger s = read s :: Int
   result = do
     fileContents <- readFile filename
     let inputOffsets = map readInteger $ words fileContents
-    return $ part1loop 0 inputOffsets 0
+    return $ loopfn 0 inputOffsets 0
 
--- part1 "resources/input05.txt"
+-- countLoops "resources/input05.txt" part1loop
 -- 391540
+
+----------------------------------------------------------------------
+
+part2loop :: Int -> [Int] -> Int -> Int
+part2loop pos offsets steps =
+  if (pos < 0) || (pos >= (length offsets)) then steps
+  else part2loop pos' offsets' (1 + steps) where
+    curr = offsets !! pos
+    pos' = pos + curr
+    offsets' =
+      updateAt offsets pos (curr + (if (curr >= 3) then (-1) else 1))
+
+-- countLoops "resources/input05.txt" part2loop
+-- 
