@@ -1,6 +1,7 @@
 module Day07 where
 
-import Data.Map as Map hiding (filter, foldl, map, null, take)
+import Data.Map as Map hiding (filter, foldl, foldr, map, null, take)
+import qualified Data.Map as DMap
 
 exampleInput = ["pbga (66)",
                 "xhth (57)",
@@ -38,10 +39,46 @@ parentsMap ls = fromList $ concatMap (toKVpairs . wordsToNode . words) ls
 findRoot :: [String] -> String
 findRoot lines = head $ filter (not . ((flip member) pm)) parents where
   pm = parentsMap lines
-  parents = Map.foldr (:) [] pm
+  parents = DMap.foldr (:) [] pm
 
 part1 = do
     fileContents <- readFile "resources/input07.txt"
     putStrLn $ findRoot $ lines fileContents
 
 ----------------------------------------------------------------------
+
+foldNodes :: Map String Node -> String -> Map String Node
+foldNodes m s = insert (head ws) (wordsToNode ws) m where ws = words s
+
+nodesMap :: [String] -> Map String Node
+nodesMap input = foldl foldNodes empty input
+
+children (Node _ _ xs) = xs
+
+weight :: Map String Node -> String -> Integer
+weight m name =
+  (+ (nw curr)) $ foldl (+) 0 $ map (weight m) (children curr) where
+  nw (Node _ w _) = w
+  curr = findWithDefault (Node "x" 0 []) name m
+
+-- weight (nodesMap exampleInput) "ugml" -- 251
+
+-- groupBy even [1..5] -> fromList [(False,[1,3,5]),(True,[2,4])]
+groupBy :: Ord b => (a -> b) -> [a] -> Map b [a]
+groupBy f xs =
+  foldr (\x m -> insert (f x) (x:(findWithDefault [] (f x) m)) m) empty xs
+
+-- unbalanced: for a given map and root, find the unbalanced node.
+-- group children by weight, filter the values that are lists of length 1,
+-- take the first, extract the actual value
+
+unbalanced :: Map String Node -> String -> String
+unbalanced m n = let
+  cNames = children $ findWithDefault (Node "" 0 []) n m
+  unbParent = (cNames == []) ||
+              ((==1) $ length $ fromList $ map (\c->(weight m c, 0)) cNames)
+  in if unbParent then n else
+  extract $ DMap.filter((==1) . length) $ groupBy (weight m) cNames where
+  extract = head . snd . head . toList
+
+-- unbalanced (nodesMap exampleInput) (findRoot exampleInput) -- "ugml"
