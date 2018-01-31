@@ -77,8 +77,31 @@ unbalanced m n = let
   cNames = children $ findWithDefault (Node "" 0 []) n m
   unbParent = (cNames == []) ||
               ((==1) $ length $ fromList $ map (\c->(weight m c, 0)) cNames)
-  in if unbParent then n else
-  extract $ DMap.filter((==1) . length) $ groupBy (weight m) cNames where
-  extract = head . snd . head . toList
+  in if unbParent then n else -- look in the children
+  unbalanced m $ extract $ groupBy (weight m) cNames where
+  extract = head . snd . head . toList . DMap.filter((==1) . length)
 
 -- unbalanced (nodesMap exampleInput) (findRoot exampleInput) -- "ugml"
+
+-- desiredWeight: look for the weight of siblings of the unbalanced node
+desiredWeight input = let
+  nodesMap' = nodesMap input
+  unbNode = unbalanced nodesMap' (findRoot input)
+  parent = findWithDefault "?" unbNode $ parentsMap input
+  parentNode = findWithDefault (Node "?" 0 []) parent nodesMap'
+  sibling = head $ filter ((/= unbNode)) $ children $ parentNode
+  in weight nodesMap' sibling
+
+newWeight input = let
+  nodesMap' = nodesMap input
+  unbNode = unbalanced nodesMap' (findRoot input)
+  nw (Node _ w _) = w
+  nodeSoloWeight = nw $ findWithDefault (Node "?" 0 []) unbNode nodesMap'
+  desired = desiredWeight input
+  unbNodeWeight = weight nodesMap' unbNode
+  in nodeSoloWeight + (desired - unbNodeWeight)
+
+part2 = do
+    fileContents <- readFile "resources/input07.txt"
+    let fileLines = lines fileContents
+    putStrLn $ show $ newWeight $ lines fileContents
