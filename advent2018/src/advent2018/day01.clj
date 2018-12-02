@@ -1,5 +1,4 @@
-(ns advent2018.day1
-  (:gen-class))
+(ns advent2018.day01)
 
 (def example1
   [+1, -2, +3, +1])
