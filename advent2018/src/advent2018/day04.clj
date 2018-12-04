@@ -84,8 +84,9 @@
 
       zzz-entries)))
 
-;; guard 10 sleeps from 00:05 until 00:24
-;; (sleep-minutes (take 3 (process-input example-data)))
+;; part 1 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Find the guard that has the most minutes asleep. What minute does that guard spend asleep the most?
 
 (defn solve-part-1 [events]
 
@@ -113,3 +114,26 @@
 
 ;; (solve-part-1 example-data)
 ;; (solve-part-1 (->> "resources/day04.txt" slurp))
+
+;; part 2 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Of all guards, which guard is most frequently asleep on the same minute?
+
+(defn solve-part-2 [events]
+  (let [sleep-events (sleep-minutes (process-input events))
+        [guard ts]   (->> sleep-events
+                          frequencies
+                          (sort-by second)
+                          last
+                          first)
+        minute       (->> ts
+                          (re-seq #"..:(.*)")
+                          first
+                          last
+                          (Integer.))]
+    (* guard minute)))
+
+;; (solve-part-2 example-data) => 4455
+;; (solve-part-2 (slurp "resources/day04.txt"))
+
+
