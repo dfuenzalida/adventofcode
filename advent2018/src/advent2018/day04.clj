@@ -24,7 +24,8 @@
   (->> input
        (re-seq #"(.*)")
        (map first)
-       (filter seq)))
+       (filter seq)
+       sort))
 
 ;; (last (process-input example-data))
 ;; (->> "resources/day04.txt" slurp process-input sort last)
@@ -35,7 +36,7 @@
 (defn format-hh-mm [hh mm]
   (str (format-digit hh) ":" (format-digit mm)))
 
-(defn next-hh-mm [s]
+(defn inc-hh-mm [s]
   (let [[hh mm] (->> (re-seq #"(.*):(.*)" s) first rest (map #(str "1" %)) (map read-string) (map #(mod % 100)))
         inc-hh  (if (>= mm 59) 1 0)]
     (format-hh-mm (mod (+ hh inc-hh) 24) (mod (inc mm) 60))))
@@ -51,7 +52,7 @@
 ;; (hhmm-desc "[1518-11-23 00:57] wakes up")
 ;; (hhmm-desc "[1518-06-22 23:58] Guard #1867 begins shift")
 
-;; [["00:05" 10], ["00:06" 10] ,,, ["00:24" 10]]
+;; [[10 "00:05"], [10 "00:06"] ,,, [10 "00:24"]]
 (defn sleep-minutes [events]
   (loop [events events
          zzz-entries []
@@ -59,26 +60,27 @@
          hhmm  "23:58"
          asleep false]
     (if (seq events)
-      (let [[evt-hhmm evt-desc] (hhmm-desc (first events))]
-        (println hhmm "->" evt-hhmm "-" evt-desc)
+      (let [[evt-hhmm evt-desc] (hhmm-desc (first events))
+            next-hh-mm          (inc-hh-mm hhmm)]
+        ;; (println hhmm "->" evt-hhmm "-" evt-desc)
         (cond
 
           (and (= hhmm evt-hhmm) (str/starts-with? evt-desc "Guard"))
           (let [new-guard (guard-from evt-desc)]
             (recur
-             (rest events) zzz-entries new-guard (next-hh-mm hhmm) false))
+             (rest events) zzz-entries new-guard next-hh-mm false))
 
           (= [hhmm "falls asleep"] [evt-hhmm evt-desc])
           (recur
-           (rest events) (conj zzz-entries [guard hhmm]) guard (next-hh-mm hhmm) true)
+           (rest events) (conj zzz-entries [guard hhmm]) guard next-hh-mm true)
 
           (= [hhmm "wakes up"] [evt-hhmm evt-desc])
           (recur
-           (rest events) zzz-entries guard (next-hh-mm hhmm) false)
+           (rest events) zzz-entries guard next-hh-mm false)
 
           :otherwise
           (recur
-           events (if asleep (conj zzz-entries [guard hhmm]) zzz-entries) guard (next-hh-mm hhmm) asleep)))
+           events (if asleep (conj zzz-entries [guard hhmm]) zzz-entries) guard next-hh-mm asleep)))
 
       zzz-entries)))
 
@@ -86,10 +88,28 @@
 ;; (sleep-minutes (take 3 (process-input example-data)))
 
 (defn solve-part-1 [events]
-  ;; find the guard that sleeps the most
-  ;; find the hour that the guard above was more frequently sleeping
-  )
 
-(defn -main [ & args ]
-  (println (sleep-minutes (process-input example-data))))
+  (let [sleep-events (sleep-minutes (process-input events))
 
+        ;; find the guard that sleeps the most
+        sleepy-guard (->> sleep-events (map first) frequencies (sort-by second) last first)
+
+        ;; find the hour that the guard above was more frequently sleeping
+        sleepy-freq (->> sleep-events
+                         (filter (fn [[g e]] (= g sleepy-guard)))
+                         (map second)
+                         frequencies
+                         (sort-by second)
+                         last
+                         first)
+
+        sleepy-minute (->> sleepy-freq
+                           (re-seq #"..:(.*)")
+                           first
+                           last
+                           (Integer.))]
+
+    (* sleepy-guard sleepy-minute)))
+
+;; (solve-part-1 example-data)
+;; (solve-part-1 (->> "resources/day04.txt" slurp))
