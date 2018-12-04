@@ -54,15 +54,17 @@
 ;; (outline-for "#1 @ 2,2: 2x2")
 ;; (count (outline-for "#1 @ 0,0: 3x3")) => 8 ;; (3x3 grid minus the center point)
 
-(defn part-2 [input]
-  (first
-   (filter some?
-           (for [n (range (count input))]
-             (let [most-points (set (mapcat points-for (delete-nth input n)))
-                   claim-points (set (points-for (nth input n)))]
-               (when-not (seq (filter claim-points most-points))
-                 n))))))
+(def points-for-memo (memoize points-for))
 
-;; (part-1 (drop 1 example-input))
+(defn part-2 [input]
+  (inc
+   (first
+    (filter some?
+            (for [n (range (count input))]
+              (let [most-points (set (mapcat points-for-memo (delete-nth input n)))
+                    claim-points (set (points-for-memo (nth input n)))]
+                (when-not (seq (filter claim-points most-points))
+                  n)))))))
+
 ;; (part-2 example-input)
 ;; (part-2 (read-input))
