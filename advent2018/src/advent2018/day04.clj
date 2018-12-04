@@ -52,8 +52,8 @@
 ;; (hhmm-desc "[1518-06-22 23:58] Guard #1867 begins shift")
 
 ;; [["00:05" 10], ["00:06" 10] ,,, ["00:24" 10]]
-(defn sleep-minutes [eventss]
-  (loop [events eventss
+(defn sleep-minutes [events]
+  (loop [events events
          zzz-entries []
          guard -1
          hhmm  "23:58"
@@ -63,34 +63,32 @@
         (println hhmm "->" evt-hhmm "-" evt-desc)
         (cond
 
-          (and (= hhmm evt-hhmm)
-               (str/starts-with? evt-desc "Guard"))
-
+          (and (= hhmm evt-hhmm) (str/starts-with? evt-desc "Guard"))
           (let [new-guard (guard-from evt-desc)]
-            (recur (rest events) zzz-entries new-guard (next-hh-mm hhmm) false))
+            (recur
+             (rest events) zzz-entries new-guard (next-hh-mm hhmm) false))
 
           (= [hhmm "falls asleep"] [evt-hhmm evt-desc])
-          (recur (rest events)
-                 (conj zzz-entries [guard hhmm])
-                 guard
-                 (next-hh-mm hhmm)
-                 true)
+          (recur
+           (rest events) (conj zzz-entries [guard hhmm]) guard (next-hh-mm hhmm) true)
 
           (= [hhmm "wakes up"] [evt-hhmm evt-desc])
-          (recur (rest events) zzz-entries guard (next-hh-mm hhmm) false)
+          (recur
+           (rest events) zzz-entries guard (next-hh-mm hhmm) false)
 
           :otherwise
           (recur
-           events
-           (if asleep (conj zzz-entries [guard hhmm]) zzz-entries)
-           guard
-           (next-hh-mm hhmm)
-           asleep)))
+           events (if asleep (conj zzz-entries [guard hhmm]) zzz-entries) guard (next-hh-mm hhmm) asleep)))
 
       zzz-entries)))
 
 ;; guard 10 sleeps from 00:05 until 00:24
 ;; (sleep-minutes (take 3 (process-input example-data)))
+
+(defn solve-part-1 [events]
+  ;; find the guard that sleeps the most
+  ;; find the hour that the guard above was more frequently sleeping
+  )
 
 (defn -main [ & args ]
   (println (sleep-minutes (process-input example-data))))
