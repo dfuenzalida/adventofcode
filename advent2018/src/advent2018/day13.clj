@@ -28,17 +28,14 @@
 (def right {:up :right, :right :down, :down :left, :left :up})
 (def speed {:up [0 -1] :down [0 1] :left [-1 0] :right [1 0]})
 
-;; TODO remember to replace the carts original position with tracks:
-;; < and > are horizontal tracks: '-', ^ and v are vertical tracks: '|'.
-
 (defn crash? [carts] ;; [[x y :dir turn-cycles] ... ]
   (->> carts
        (map (juxt first second))
        frequencies
        (filter (fn [[k v]] (> v 1)))
-       ffirst))
+       seq))
 
-;; (crash? [[1 0 :up] [2 0 :down] [2 0 :left]]) ;; => [2 0]
+;; (map first (crash? [[1 0 :up] [2 0 :down] [2 0 :left] [1 0 :down]])) ;; => [2 0]
 
 ;; "when going :right and enter a '\' we turn right (and end facing :down)
 (def right-turns
@@ -82,5 +79,34 @@
   (->> (slurp "resources/day13.txt")
        s/split-lines))
 
-;; (part1 example-input) ;; => [7 3]
-;; (part1 (read-input))
+;; (->> (part1 example-input) first) ;; => [[7 3] 2] = "crash at [7 3] with 2 carts"
+;; (->> (part1 (read-input)) first ffirst)
+
+(def example-input2 ["/>-<\\  "
+                     "|   |  "
+                     "| /<+-\\"
+                     "| | | v"
+                     "\\>+</ |"
+                     "  |   ^"
+                     "  \\<->/"])
+
+(defn part2 [input]
+  (let [tube-map input]
+    (loop [ticks 0, carts (find-carts input), moved-carts []]
+      (let [crashed (crash? (concat carts moved-carts))]
+        (if crashed
+          (let [;; _ (println "ticks" ticks "crashed" crashed) ;; DEBUG
+                crashsites  (set (map first crashed))
+                carts       (remove (fn [[x y & _]] (crashsites [x y])) carts)
+                moved-carts (remove (fn [[x y & _]] (crashsites [x y])) moved-carts)]
+            (if (<= (+ (count carts) (count moved-carts)) 1)
+              (->> carts first (move-cart tube-map) (take 2)) ;; coords
+              (recur (inc ticks) carts moved-carts)))
+          (if (seq carts)
+            (recur ticks (rest carts) (conj moved-carts
+                                            (move-cart tube-map (first carts))))
+            (recur (inc ticks) (sort-by cart-order moved-carts) [])))))))
+
+;; (->> (part2 example-input2))
+;; (->> (part2 (read-input)))
+
