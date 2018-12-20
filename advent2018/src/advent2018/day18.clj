@@ -14,7 +14,7 @@
 
 (def example-input (s/split-lines example))
 
-(defn char-at [s i]
+(defn char-at [^String s ^Integer i]
   (.substring s i (inc i)))
 
 (defn adjacents [terrain x y]
@@ -83,3 +83,28 @@
   (s/split-lines (slurp "resources/day18.txt")))
 
 ;; (part-1 (read-input) 10)
+
+;; part 2 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; (->> (take 50 (iter-terrain example-input)) (map print-terrain))
+
+(defn find-fixed-terrain [terrain]
+  (let [tuples   (map-indexed vector (take 1000 (iter-terrain terrain)))]
+    (loop [tuples tuples, seen {}]
+      (let [[i terr] (first tuples)]
+        (if (seen terr)
+          [i (seen terr)] ;; [current-index index-of-previously-seen-terrain]
+          (recur (rest tuples) (assoc seen terr i)))))))
+
+;; (find-fixed-terrain (read-input))
+
+(defn part-2 [terrain]
+  (let [[b a]  (find-fixed-terrain terrain)
+        period (- b a)
+        index  (+ a (mod (- 1000000000 a) period))
+        terr   (first (drop index (iter-terrain terrain)))
+        freqs  (frequencies (apply str terr))]
+    (* (get freqs \| 0) (get freqs \# 0))))
+
+;; (time (part-2 (read-input))) ;; => "Elapsed time: 28760.035084 msecs"
+
