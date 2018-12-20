@@ -17,7 +17,7 @@
 (defn char-at [^String s ^Integer i]
   (.substring s i (inc i)))
 
-(defn adjacents [terrain x y]
+(defn adjacents [terrain ^Integer x ^Integer y]
   (merge
    {"." 0 "|" 0 "#" 0} ;; defaults
    (let [width  (count (first terrain))
@@ -35,7 +35,7 @@
 
 ;; (adjacents example-input 0 0)
 
-(defn iter-acre [terrain x y]
+(defn iter-acre [terrain ^Integer x ^Integer y]
   (let [acre (char-at (nth terrain y) x)
         adjs (adjacents terrain x y)]
     (cond
@@ -88,8 +88,8 @@
 
 ;; (->> (take 50 (iter-terrain example-input)) (map print-terrain))
 
-(defn find-fixed-terrain [terrain]
-  (let [tuples   (map-indexed vector (take 1000 (iter-terrain terrain)))]
+(defn find-fixed-terrain [terrain-iterator]
+  (let [tuples (map-indexed vector (take 1000 terrain-iterator))]
     (loop [tuples tuples, seen {}]
       (let [[i terr] (first tuples)]
         (if (seen terr)
@@ -99,12 +99,14 @@
 ;; (find-fixed-terrain (read-input))
 
 (defn part-2 [terrain]
-  (let [[b a]  (find-fixed-terrain terrain)
+  (let [terr-i (iter-terrain terrain)
+        [b a]  (find-fixed-terrain terr-i)
         period (- b a)
         index  (+ a (mod (- 1000000000 a) period))
-        terr   (first (drop index (iter-terrain terrain)))
+        terr   (first (drop index terr-i))
         freqs  (frequencies (apply str terr))]
     (* (get freqs \| 0) (get freqs \# 0))))
 
 ;; (time (part-2 (read-input))) ;; => "Elapsed time: 28760.035084 msecs"
+;; After optimization (recycling iterator) => "Elapsed time: 14794.859524 msecs"
 
