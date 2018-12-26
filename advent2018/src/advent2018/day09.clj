@@ -1,16 +1,22 @@
 (ns advent2018.day09)
 
+(defn length [xs]
+  (.size xs)
+  ;; #?(:clj (.size xs)
+  ;;    :cljs (.length xs))
+  )
+
 (defn insert-at [board ^long index ^long marble] ;; returns [board index score]
-  (let [index (inc (rem (dec index) (count board)))]
+  (let [size (length board)
+        index (inc (rem (dec index) size))]
     (if (zero? (rem marble 23))
-      (let [to-remove (rem (+ index (count board) -9) (count board))
-            score     (+ marble (nth board to-remove))]
-        [(into [] (concat (take to-remove board)
-                          (drop (inc to-remove) board)))
+      (let [to-remove (rem (+ index size -9) size)
+            score     (+ marble (board to-remove))]
+        [(into (subvec board 0 to-remove) (subvec board (inc to-remove)))
          to-remove score])
-      [(into [] (concat (take index board)
-                        [marble]
-                        (drop index board)))
+      [(-> (subvec board 0 index)
+           (conj marble)
+           (into (subvec board index)))
        index 0])))
 
 ;; (insert-at [0] 0 1)
@@ -24,10 +30,12 @@
 ;; score-map - scores
 
 (defn iter-game [[board ^long player ^long index ^long marble score-map]]
-  (println player board)
+  ;; (println player board)
   (let [[newboard newindex score] (insert-at board (+ 2 index) marble)]
+    ;; (when (pos? score)
+    ;;   (println "adding" score "points to player" player))
     [newboard
-     (inc (rem player (count score-map)))
+     (inc (rem player (length score-map)))
      newindex
      (inc marble)
      (if (zero? score)
@@ -49,3 +57,7 @@
 ;; (game-max-score 30 5807) => 37305
 ;; (time (game-max-score 459 72103)) => "Elapsed time: 1166720.191011 msecs"
 
+;; After optimization (subvec)
+;; (time (game-max-score 459 72103)) => "Elapsed time: 455356.42075 msecs"
+
+;; (game-max-score 459 721)
