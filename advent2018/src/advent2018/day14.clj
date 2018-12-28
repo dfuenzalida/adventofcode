@@ -1,4 +1,5 @@
-(ns advent2018.day14)
+(ns advent2018.day14
+  (:import [java.util List]))
 
 (defn iter [[recipes pos1 pos2]]
   (let [r1   (nth recipes pos1)
@@ -20,24 +21,24 @@
 (defn recipes-after [n]
   (let [num-recs (+ 10 n)
         all-recs (iterate iter [[3 7] 0 1])
-        filterfn (fn [[r _ _]] (< (.size r) num-recs))
+        filterfn (fn [[^List r _ _]] (< (.size r) num-recs))
         recipe   (ffirst (drop-while filterfn all-recs))]
     (subvec recipe n (+ 10 n))))
 
 ;; (apply str (recipes-after 2018)) => "5941429882"
 
-(defn ending? [ending]
+(defn ending? [^List ending]
   (let [req-size (.size ending)]
-    (fn [[r _ _]] (or (= ending (subvec r (- (.size r) req-size)))
-                      (= ending (subvec r (- (.size r) req-size 1) (dec (.size r))))))))
+    (fn [[^List r _ _]] (or (= ending (subvec r (- (.size r) req-size)))
+                            (= ending (subvec r (- (.size r) req-size 1) (dec (.size r))))))))
 
 ;; ((ending? [4 5 6]) [[1 2 3 4 5 6] nil nil]) => true
 ;; ((ending? [4 5 6]) [[1 2 3 4 5 6 9] nil nil]) => true
 
-(defn part2 [ending]
+(defn part2 [^List ending]
   (let [req-size (.size ending)
         all-recs (iterate iter [[3 7] 0 1])
-        all-recs (drop-while (fn [[r _ _]] (< (.size r) (inc req-size))) all-recs)
+        all-recs (drop-while (fn [[^List r _ _]] (< (.size r) (inc req-size))) all-recs)
         filterfn (ending? ending)]
     (-> (filter filterfn all-recs)
         ffirst
@@ -50,3 +51,6 @@
 ;; (time (part2 [? ? ? ? ? ?]))
 ;; "Elapsed time: 387381.290379 msecs"
 
+;; With type hints (^List)
+;; (time (part2 [? ? ? ? ? ?]))
+;; "Elapsed time: 46057.642167 msecs"
