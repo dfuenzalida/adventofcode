@@ -23,7 +23,6 @@
 (defn make-test [f g h]
   (make-op (fn [a b] (if (f a b) 1 0)) g h))
 
-(def idem identity)
 (def opcodes ;; :key -> (fn [[r0 r1 r2 r3] a b c] -> [r0 r1 r2 r3])
   {
    :addr (make-regs +) :addi (make-imm +)
@@ -72,6 +71,8 @@
 
 ;; (part1)
 
+;; part 2 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn by-opcode [n [_ [opcode _ _ _] _]]
   (= n opcode))
 
@@ -80,9 +81,10 @@
      (apply f [regs-before a b c])))
 
 ;; Given a number, returns the key from opcodes that validates all samples including it
-(defn opcode-name-by-number [n]
+
+(defn opcode-name-by-number [n remaining-opcodes]
   (let [samples (filter (partial by-opcode n) (first (read-input)))]
-    (loop [remaining-opcodes opcodes found []]
+    (loop [remaining-opcodes remaining-opcodes found []]
       (if (seq remaining-opcodes)
         (let [[name f] (first remaining-opcodes)
               filterfn (partial good-sample? f)
@@ -92,23 +94,37 @@
             (recur (rest remaining-opcodes) found)))
         found))))
 
+;; This is a non-performing way to build the number->opcode map since some opcodes
+;; satisfy all the samples (eg. :bori or :bani) so we start building with those
+;; mappings that are exclusive (eg. 0 -> :bani) and removing opcodes and numbers
+;; from the pool until all resolve. It takes longer but it works automatically.
+
 (defn build-opcode-map []
-  (into {} (map #(vector % (opcode-name-by-number %)) (range 16))))
+  (loop [remaining-opcodes opcodes
+         remaining-ids (into [] (range 16))
+         kvs {}]
+    (if (seq remaining-ids)
+      (let [id        (first remaining-ids)
+            ops-by-id (opcode-name-by-number id remaining-opcodes)]
+        (if (= 1 (count ops-by-id))
+          (let [opname (first ops-by-id)]
+            (recur (dissoc remaining-opcodes opname) ;; opcode is used, spend it
+                   (subvec remaining-ids 1)          ;; like rest, but still a vector
+                   (assoc kvs id opname)))
+          (recur remaining-opcodes
+                 (conj (subvec remaining-ids 1) id) ;; move to the END for retrying
+                 kvs)))
+      kvs)))
 
 ;; (build-opcode-map)
 
-(def opcodes-map
-  (into {} [[0  :bani] [6  :bori] [10 :mulr] [8  :muli]
-            [15 :addi] [5  :borr] [13 :addr] [2  :seti]
-            [7  :banr] [12 :setr] [9  :eqri] [14 :gtir]
-            [3  :eqir] [11 :gtrr] [4  :eqrr] [1  :gtri]]))
-
-;; :key -> (fn [[r0 r1 r2 r3] a b c] -> [r0 r1 r2 r3])
-
-(defn execute-instruction [regs [opid a b c]]
+(defn execute-instruction [opcodes-map regs [opid a b c]]
   (let [f (get opcodes (get opcodes-map opid))]
     (apply f [regs a b c])))
 
 (defn part2 []
-  (let [instructions (second (read-input))]
-    (reduce execute-instruction [0 0 0 0] instructions)))
+  (let [exec-instr   (partial execute-instruction (build-opcode-map))
+        instructions (second (read-input))]
+    (reduce exec-instr [0 0 0 0] instructions)))
+
+;; (part2)
