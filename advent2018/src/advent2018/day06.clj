@@ -75,3 +75,17 @@
        (map read-string)))
 
 ;; (time (part1 (read-input)))
+
+;; part 2 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn part2 [input]
+  (let [[[left top] [right bottom]] (bounding-box input)]
+    (->> (for [x (range left (inc right))
+               y (range top (inc bottom))]
+           (reduce + (for [p2 input]
+                       (distance [x y] p2))))
+         (filter #(< % 10000))
+         count)))
+
+;; (time (part2 (read-input)))
+
