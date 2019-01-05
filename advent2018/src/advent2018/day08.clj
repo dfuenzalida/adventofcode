@@ -17,7 +17,7 @@
                (dec num-nodes)
                (conj nodes {:children children :meta meta}))))))
 
-;; (clojure.pprint/pprint (->> (parse example-input 1) first))
+;; (clojure.pprint/pprint (->> (parse example-input 1) ffirst))
 
 (defn part1 [input]
   (let [tree (ffirst (parse input 1))]
@@ -25,10 +25,19 @@
          (mapcat :meta)
          (reduce +))))
 
-;; (part1 example-input)
+;; (part1 example-input) => 138
 ;; (part1 (read-input))
 
-;; (clojure.pprint/pprint data)
-;; (clojure.walk/postwalk evaluate (first data))
-;; (->> (tree-seq :children :children (first data)) (mapcat :meta) (reduce +))
-                                   
+(defn eval-tree [{:keys [children meta]}]
+  (if (empty? children)
+    (reduce + meta) ;; childless node? sum of its meta entries
+    (let [num-children (count children)
+          indexes      (->> meta (filter pos?) (map dec) (filter #(< % num-children)))]
+      (reduce + (map #(eval-tree (get children %)) indexes)))))
+
+(defn part2 [input]
+  (let [tree (ffirst (parse input 1))]
+    (eval-tree tree)))
+
+;; (part2 example-input) => 66
+;; (part2 (read-input))
