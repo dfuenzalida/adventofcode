@@ -87,3 +87,34 @@
 ;; (time (part2 7347))
 ;; "Elapsed time: 79467.896779 msecs"
 
+;; Visualization of the grid below. Positive values in green, negative in red.
+(comment
+
+  ;; Import the Java image APIs
+  (import 'java.awt.image.BufferedImage)
+  (import 'javax.imageio.ImageIO)
+
+  ;; Map value to boosted color for better visualization
+  (defn to-color [z]
+    (int
+     (if (pos? z)
+       (min (* 256 64 z) 0xff00)
+       (min (* -1 256 256 64 z) 0xff0000))))
+
+  ;; Renders the grid as a PNG image
+  (defn render-grid [serial]
+    (let [grid (power-grid serial)
+          image (java.awt.image.BufferedImage.
+                 (int grid-size)
+                 (int grid-size)
+                 java.awt.image.BufferedImage/TYPE_INT_RGB)]
+      (dorun
+       (for [x (range grid-size)
+             y (range grid-size)
+             :let [rgb (to-color (grid [x y]))]]
+         (.setRGB image x y rgb)))
+      (ImageIO/write image "png" (java.io.File. (str "output-" serial ".png")))))
+
+  ;; (render-grid 18)
+  ;; (render-grid 7347)
+)
