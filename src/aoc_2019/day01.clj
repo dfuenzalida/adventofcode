@@ -5,7 +5,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn read-input []
-  (->> (str "[" (slurp "resources/input01.txt") "]")
+  (->> (slurp "resources/input01.txt")
+       (format "[%s]")
        (clojure.edn/read-string)))
 
 (defn fuel [mass]
