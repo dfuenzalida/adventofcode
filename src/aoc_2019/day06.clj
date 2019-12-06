@@ -30,8 +30,7 @@
 (defn common-parent [m k1 k2]
   (let [p1 (path-up m k1)
         s2 (set (path-up m k2))]
-    (first
-     (filter s2 p1))))
+    (some s2 p1)))
 
 (defn solve-2 [m you san]
   (let [common (common-parent m you san)
