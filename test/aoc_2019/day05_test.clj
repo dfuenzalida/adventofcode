@@ -1,9 +1,8 @@
 (ns aoc-2019.day05-test
   (:require [clojure.test :refer :all]
-            [aoc-2019.day05 :refer [execute]]))
+            [aoc-2019.intcode :refer [execute]]))
 
 (deftest tests
-
   (testing "Compare if the input is equal to 8 (position mode)"
     (is (= 1 (->> (execute [3,9,8,9,10,9,4,9,99,-1,8] [8]) last last)))
     (is (= 0 (->> (execute [3,9,8,9,10,9,4,9,99,-1,8] [666]) last last))))

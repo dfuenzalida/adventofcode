@@ -1,5 +1,5 @@
 (ns aoc-2019.day07
-  (:require [aoc-2019.day05 :refer [execute]]))
+  (:require [aoc-2019.intcode :refer [execute]]))
 
 (defn read-program []
   (->> (slurp "resources/input07.txt")
