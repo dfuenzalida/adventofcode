@@ -68,29 +68,3 @@
              (recur ip' relbase' prog' stdin' stdout')))
          [ip program stdin stdout])))))
 
-(comment
-  ;; Tests for problem 9
-
-  ;; should return `prog` - OK
-  (let [prog [109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99]]
-    (->> (execute prog []) last (= prog)))
-
-  ;; should be 16 - OK
-  (let [prog [1102,34915192,34915192,7,4,7,99,0]]
-    (->> (execute prog []) last last str count (= 16)))
-
-  ;; output is middle number
-  (let [prog [104,1125899906842624,99]]
-    (->> (execute prog []) last last (= 1125899906842624)))
-
-  ;; output number at address 1985
-  (->> (execute {0 109, 1 50, 2 109, 3 69, 4 204, 5 -34, 85 42} 0 []) last)
-
-  ;; not 203
-  (let [prog (->> (slurp "resources/input09.txt")
-                  (format "[%s]")
-                  (clojure.edn/read-string))]
-    (->> (execute prog [1]) last))
-
-  ;; end comment
-  )
