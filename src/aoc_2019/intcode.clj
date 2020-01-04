@@ -50,9 +50,9 @@
     :else (get program (+ ip addr) 0)))
 
 (defn execute
-  ([program stdin] (execute (zipmap (range) program) 0 stdin))
-  ([program ip stdin]
-   (loop [ip ip, relbase 0, program program, stdin stdin, stdout []]
+  ([program stdin] (execute (zipmap (range) program) 0 0 stdin))
+  ([program ip relbase stdin]
+   (loop [ip ip, relbase relbase, program program, stdin stdin, stdout []]
      (let [instruction (get program ip 0)
            opcode (mod instruction 100)
            c      (mod (quot instruction 100) 10)  ;; mode for 1st param
@@ -63,8 +63,8 @@
            op3    (as-> (+ ip 3) $ (get program $ 0))]
        (if func
          (if (and (= 3 opcode) (= [] stdin))
-           [ip program stdin stdout]
+           [ip relbase program stdin stdout]
            (let [[ip' relbase' prog' stdin' stdout'] (func ip relbase op1 op2 op3 program stdin stdout)]
              (recur ip' relbase' prog' stdin' stdout')))
-         [ip program stdin stdout])))))
+         [ip relbase program stdin stdout])))))
 

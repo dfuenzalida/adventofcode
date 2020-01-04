@@ -45,17 +45,17 @@
 
 (defn loop-amps [program phases]
   (loop [i      0
-         amps   (vec (repeat 5 [0 program]))
+         amps   (vec (repeat 5 [0 0 program]))
          input  [0]
          phases phases
          signal 0]
-    (let [[ip prog] (nth amps i)
+    (let [[ip relbase prog] (nth amps i)
           stdin (if (seq phases) (into [(first phases)] input) input)
-          [ip' prog' in' out'] (execute prog ip stdin)]
+          [ip' relbase' prog' in' out'] (execute prog ip relbase stdin)]
       (if (and (= 4 i) (= stdin in'))
         signal ;; last amp and didn't consume input? we return the last best signal
         (recur (mod (inc i) 5)
-               (assoc-in amps [i] [ip' prog' in'])
+               (assoc-in amps [i] [ip' relbase' prog' in'])
                out'
                (rest phases)
                (if (and (= 4 i) (seq out')) ;; sent output on last amp? compute max
