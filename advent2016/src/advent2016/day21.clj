@@ -106,7 +106,7 @@
   )
 
 (defn unrotate-based [xs x]
-  (let [index (- (count xs) (index-of xs x) 1)]
+  (let [index (index-of xs x) #_(- (count xs) (index-of xs x) 1)]
     (rotate-left xs (+ 1 index (if (>= index 4) 1 0)))))
 
 (defn unscramble [xs command]
@@ -141,6 +141,68 @@
          (apply str))))
 
 ;; (part-2 "fbgdceah")
+
+(comment
+
+  ;; How to find the bug:
+  ;; Start with output stream, reduce all steps and get a list of strings getting unscrambled back to the original
+  ;; then reverse the list of unscrambled steps. Compare to the list of strings being scrambled, find the step
+  ;; and instruction where they differ
+
+  (def scramble-steps-rev
+    (->> (reductions scramble (vec "hegbdcfa") (read-input))
+         reverse
+         (map (partial apply str))))
+
+  (def unscramble-steps
+    (let [steps (->> (read-input) reverse vec)]
+      (->> (reductions unscramble (vec "fbgdceah") steps)
+           (map (partial apply str)))))
+
+  ;; (count scramble-steps-rev)
+  ;; (count unscramble-steps)
+
+  (->> (map vector scramble-steps-rev unscramble-steps)
+       (take-while (fn [[a b]] (= a b)))
+       count)
+
+  ;; Step #18 (rev) is wrong:
+  (let [steps (->> (read-input) reverse vec)]
+    (steps 17))
+
+
+  (let [steps (->> (read-input) reverse vec)]
+    (->>
+      (map vector
+           scramble-steps-rev
+           unscramble-steps
+           (into [[]] steps))
+      (take 50)
+      clojure.pprint/pprint))
+  
+
+  ;; FIX THIS STEP
+  (->>
+   (unscramble (vec "hgcdbaef") [:rotate :based :on :position :of :letter \e])
+   (reduce str))
+
+  ;; returns cdbaefhg, should return hgcdbaef
+  (->> (unrotate-based (vec "hgcdbaef") \e) (reduce str))
+
+  (defn rotate-based [xs x]
+    (let [index (index-of xs x)]
+      (rotate-right xs (+ 1 index (if (>= index 4) 1 0)))))
+
+  (defn unrotate-based [xs x]
+    (let [index (index-of xs x) #_(- (count xs) (index-of xs x) 1)]
+      (println index)
+      (rotate-left xs (+ 1 index (if (>= index 4) 1 0)))))
+
+  )
+
+
+
+
 
 (comment
   ;; Testing individual steps
