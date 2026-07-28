@@ -1,4 +1,4 @@
-# adventofcode-2021
+# adventofcode-2025
 
 Solutions to problems from adventofcode.com/2025 in Clojure
 
@@ -8,7 +8,7 @@ Run the tests with `clj -X:test`
 
 ## License
 
-Copyright © 2025 Denis Fuenzalida
+Copyright © 2026 Denis Fuenzalida
 
 This program and the accompanying materials are made available under the
 terms of the Eclipse Public License 2.0 which is available at
